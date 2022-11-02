@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./LetdoStoreMetadata.sol";
+import "./LetdoEscrowStoreMetadata.sol";
 import "../structs/LetdoItem.sol";
+import "../structs/LetdoOrder.sol";
 
-contract LetdoStore is LetdoStoreMetadata {
+contract LetdoStore is LetdoEscrowStoreMetadata {
     LetdoItem[] _inventory;
+    mapping(uint256 => LetdoOrder) _orders;
+    uint256 _orderCounter;
 
-    error ItemNotFound();
+    error IdNotFound();
     error ItemNotAvailable();
+    error InvalidItemAmount();
 
     constructor(string memory _storeName, address _storeCurrencyERC20) {
         storeName = _storeName;
@@ -17,7 +21,12 @@ contract LetdoStore is LetdoStoreMetadata {
     }
 
     modifier onlyExistingItem(uint256 id) {
-        if (id > _inventory.length - 1) revert ItemNotFound();
+        if (id > _inventory.length - 1) revert IdNotFound();
+        _;
+    }
+
+    modifier onlyExistingOrder(uint256 id) {
+        if (id > _orderCounter - 1) revert IdNotFound();
         _;
     }
 
@@ -51,5 +60,31 @@ contract LetdoStore is LetdoStoreMetadata {
         LetdoItem memory item = _inventory[id];
         if (!item.available) revert ItemNotAvailable();
         return item;
+    }
+
+    function getOrder(uint256 id)
+        public
+        view
+        onlyExistingOrder(id)
+        returns (LetdoOrder memory)
+    {
+        return _orders[id];
+    }
+
+    function purchase(
+        uint256 itemId,
+        uint256 quantity,
+        string memory encryptedDeliveryAddress
+    ) external onlyExistingItem(itemId) {
+        if (quantity == 0) revert InvalidItemAmount();
+        LetdoItem memory item = getInventoryItem(itemId);
+        beginEscrow(item.price * quantity);
+        _orders[_orderCounter] = LetdoOrder(
+            encryptedDeliveryAddress,
+            item.price * quantity,
+            itemId,
+            msg.sender
+        );
+        _orderCounter++;
     }
 }
