@@ -4,14 +4,17 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/contracts/LetdoStore.sol";
 import "../src/structs/LetdoItem.sol";
+import "./TestERC20.sol";
 
 contract LetdoStoreTest is Test {
     LetdoStore public store;
+    TestERC20 public currency;
     address public storeOwner = address(1);
 
     function setUp() public {
         vm.startPrank(storeOwner);
-        store = new LetdoStore("Test store");
+        currency = new TestERC20();
+        store = new LetdoStore("Test store", address(currency));
         vm.stopPrank();
     }
 

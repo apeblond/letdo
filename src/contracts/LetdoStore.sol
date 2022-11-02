@@ -1,26 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
+import "./LetdoStoreMetadata.sol";
 import "../structs/LetdoItem.sol";
 
-contract LetdoStore {
-    string public storeName;
-    address public storeOwner;
-
+contract LetdoStore is LetdoStoreMetadata {
     LetdoItem[] _inventory;
 
-    error NotOwner();
     error ItemNotFound();
     error ItemNotAvailable();
 
-    constructor(string memory _storeName) {
+    constructor(string memory _storeName, address _storeCurrencyERC20) {
         storeName = _storeName;
         storeOwner = msg.sender;
-    }
-
-    modifier onlyStoreOwner() {
-        if (msg.sender != storeOwner) revert NotOwner();
-        _;
+        storeCurrencyERC20 = _storeCurrencyERC20;
     }
 
     modifier onlyExistingItem(uint256 id) {
