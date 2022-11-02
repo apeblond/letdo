@@ -28,13 +28,11 @@ contract LetdoStore {
         _;
     }
 
-    function addInventoryItem(
-        string calldata name,
-        string calldata description,
-        string calldata imageURL,
-        uint256 price
-    ) external onlyStoreOwner {
-        _inventory.push(LetdoItem(name, description, imageURL, price, true));
+    function addInventoryItem(string calldata metadataURI, uint256 price)
+        external
+        onlyStoreOwner
+    {
+        _inventory.push(LetdoItem(metadataURI, price, true));
     }
 
     function toggleInventoryItemAvailability(uint256 id)

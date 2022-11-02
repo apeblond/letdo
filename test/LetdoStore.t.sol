@@ -24,9 +24,7 @@ contract LetdoStoreTest is Test {
     function testAddInventoryItem() public {
         vm.startPrank(storeOwner);
         store.addInventoryItem(
-            "Item 1",
-            "This is the description for Item 1",
-            "ipfs://QmbtiPZfgUzHd79T1aPcL9yZnhGFmzwar7h4vmfV6rV8Kq/1.png",
+            "ipfs://QmbtiPZfgUzHd79T1aPcL9yZnhGFmzwar7h4vmfV6rV8Kq",
             50
         );
         assertEq(store.inventoryLength(), 1);
@@ -36,11 +34,9 @@ contract LetdoStoreTest is Test {
     function testGetInventoryItem() public {
         testAddInventoryItem();
         LetdoItem memory item = store.getInventoryItem(0);
-        assertEq("Item 1", item.name);
-        assertEq("This is the description for Item 1", item.description);
         assertEq(
-            "ipfs://QmbtiPZfgUzHd79T1aPcL9yZnhGFmzwar7h4vmfV6rV8Kq/1.png",
-            item.imageURL
+            "ipfs://QmbtiPZfgUzHd79T1aPcL9yZnhGFmzwar7h4vmfV6rV8Kq",
+            item.metadataURI
         );
         assertEq(50, item.price);
         assertTrue(item.available);
