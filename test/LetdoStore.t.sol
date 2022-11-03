@@ -13,6 +13,8 @@ contract LetdoStoreTest is Test {
     address public storeOwner = address(1);
     address public buyer = address(2);
 
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+
     function setUp() public {
         vm.startPrank(storeOwner);
         currency = new TestERC20();
@@ -69,7 +71,7 @@ contract LetdoStoreTest is Test {
     function testPurchase() public {
         testAddInventoryItem();
         vm.startPrank(buyer);
-        uint orderId = store.purchase(0, 1, "ajsghajkshgkjaghjakghakjghkaj");
+        uint256 orderId = store.purchase(0, 1, "ajsghajkshgkjaghjakghakjghkaj");
         vm.stopPrank();
         LetdoOrder memory order = store.getOrder(orderId);
         assertEq(buyer, order.buyer);
@@ -91,8 +93,51 @@ contract LetdoStoreTest is Test {
         assertEq(0, store.checkAvailableCurrencyToken());
         store.setPurchaseAsReceived(0, true);
         assertEq(50, store.checkAvailableCurrencyToken());
+        assertEq(1, store.getStoreReviews()[0]);
+        assertEq(0, store.getStoreReviews()[1]);
         vm.expectRevert(LetdoStore.OrderAlreadyCompleted.selector);
         store.setPurchaseAsReceived(0, true);
+        vm.stopPrank();
+    }
+
+    function testSetPurchaseAsReceivedWithNegativeReview() public {
+        testPurchase();
+        vm.startPrank(buyer);
+        assertEq(0, store.checkAvailableCurrencyToken());
+        store.setPurchaseAsReceived(0, false);
+        assertEq(50, store.checkAvailableCurrencyToken());
+        assertEq(0, store.getStoreReviews()[0]);
+        assertEq(1, store.getStoreReviews()[1]);
+        vm.stopPrank();
+    }
+
+    function testSetPurchaseAsNotReceived() public {
+        testPurchase();
+        vm.startPrank(address(10000));
+        vm.expectRevert(LetdoStore.InvalidBuyer.selector);
+        store.setPurchaseAsNotReceived(0);
+        vm.stopPrank();
+        vm.startPrank(buyer);
+        vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
+        store.setPurchaseAsNotReceived(0);
+        vm.warp(block.timestamp + 61 days);
+        vm.expectEmit(true, true, false, true);
+        emit Transfer(address(store), buyer, 50);
+        store.setPurchaseAsNotReceived(0);
+        assertEq(0, store.getStoreReviews()[0]);
+        assertEq(1, store.getStoreReviews()[1]);
+        assertEq(0, store.checkAvailableCurrencyToken());
+        vm.stopPrank();
+    }
+
+    function testSetPurchaseAsNotReceivedAfter90Days() public {
+        testPurchase();
+        vm.startPrank(buyer);
+        vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
+        store.setPurchaseAsNotReceived(0);
+        vm.warp(block.timestamp + 91 days);
+        vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
+        store.setPurchaseAsNotReceived(0);
         vm.stopPrank();
     }
 }

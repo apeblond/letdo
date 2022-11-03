@@ -16,12 +16,20 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
     error InvalidItemAmount();
     error InvalidBuyer();
     error OrderAlreadyCompleted();
+    error ActionNotAvailable();
 
     event OrderCreated(
         address indexed buyer,
         uint256 orderId,
         uint256 amount,
         uint256 itemId
+    );
+
+    event ReviewSubmitted(
+        address indexed buyer,
+        uint256 orderId,
+        uint256 indexed itemId,
+        int8 review
     );
 
     constructor(string memory _storeName, address _storeCurrencyERC20) {
@@ -128,12 +136,30 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         onlyBuyerOfOrder(orderId)
         onlyEscrowNotCompleted(orderId)
     {
+        LetdoOrder memory order = getOrder(orderId);
         if (positiveVote) {
             _reviews[0] += 1;
+            emit ReviewSubmitted(order.buyer, orderId, order.itemId, 1);
         } else {
             _reviews[1] += 1;
+            emit ReviewSubmitted(order.buyer, orderId, order.itemId, -1);
         }
 
         _releaseFundsEscrow(orderId);
+    }
+
+    function setPurchaseAsNotReceived(uint256 orderId)
+        external
+        onlyBuyerOfOrder(orderId)
+        onlyEscrowNotCompleted(orderId)
+    {
+        if (!_canBeSetAsNotReceived(orderId)) revert ActionNotAvailable();
+
+        _reviews[1] += 1;
+
+        LetdoOrder memory order = getOrder(orderId);
+        emit ReviewSubmitted(order.buyer, orderId, order.itemId, -1);
+
+        _returnFundsEscrow(orderId);
     }
 }
