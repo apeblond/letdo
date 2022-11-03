@@ -69,9 +69,9 @@ contract LetdoStoreTest is Test {
     function testPurchase() public {
         testAddInventoryItem();
         vm.startPrank(buyer);
-        store.purchase(0, 1, "ajsghajkshgkjaghjakghakjghkaj");
+        uint orderId = store.purchase(0, 1, "ajsghajkshgkjaghjakghakjghkaj");
         vm.stopPrank();
-        LetdoOrder memory order = store.getOrder(0);
+        LetdoOrder memory order = store.getOrder(orderId);
         assertEq(buyer, order.buyer);
         assertEq(50, order.amount);
         assertEq(

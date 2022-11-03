@@ -5,5 +5,5 @@ struct LetdoEscrowOp {
     address sender;
     uint256 amount;
     uint256 timestamp;
-    bool locked;
+    bool completed;
 }
