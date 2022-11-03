@@ -121,7 +121,7 @@ contract LetdoStoreTest is Test {
         vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
         store.setPurchaseAsNotReceived(0);
         vm.warp(block.timestamp + 61 days);
-        vm.expectEmit(true, true, false, true);
+        vm.expectEmit(true, true, true, true);
         emit Transfer(address(store), buyer, 50);
         store.setPurchaseAsNotReceived(0);
         assertEq(0, store.getStoreReviews()[0]);
