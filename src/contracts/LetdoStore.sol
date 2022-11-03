@@ -9,10 +9,18 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
     LetdoItem[] _inventory;
     mapping(uint256 => LetdoOrder) _orders;
     uint256 _orderCounter;
+    uint256[2] _reviews; // [0] positive reviews, [1] negative reviews
 
     error IdNotFound();
     error ItemNotAvailable();
     error InvalidItemAmount();
+
+    event OrderCreated(
+        address indexed buyer,
+        uint256 orderId,
+        uint256 amount,
+        uint256 itemId
+    );
 
     constructor(string memory _storeName, address _storeCurrencyERC20) {
         storeName = _storeName;
@@ -85,6 +93,14 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
             itemId,
             msg.sender
         );
+
+        emit OrderCreated(
+            msg.sender,
+            _orderCounter,
+            item.price * quantity,
+            itemId
+        );
+
         _orderCounter++;
 
         return _orderCounter - 1;
