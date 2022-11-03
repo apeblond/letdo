@@ -14,6 +14,8 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
     error IdNotFound();
     error ItemNotAvailable();
     error InvalidItemAmount();
+    error InvalidBuyer();
+    error OrderAlreadyCompleted();
 
     event OrderCreated(
         address indexed buyer,
@@ -35,6 +37,17 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
 
     modifier onlyExistingOrder(uint256 id) {
         if (id > _orderCounter - 1) revert IdNotFound();
+        _;
+    }
+
+    modifier onlyBuyerOfOrder(uint256 id) {
+        LetdoOrder memory order = getOrder(id);
+        if (order.buyer != msg.sender) revert InvalidBuyer();
+        _;
+    }
+
+    modifier onlyEscrowNotCompleted(uint256 id) {
+        if (_isOpFinished(id)) revert OrderAlreadyCompleted();
         _;
     }
 
@@ -79,6 +92,10 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         return _orders[id];
     }
 
+    function getStoreReviews() external view returns (uint256[2] memory) {
+        return _reviews;
+    }
+
     function purchase(
         uint256 itemId,
         uint256 quantity,
@@ -104,5 +121,19 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         _orderCounter++;
 
         return _orderCounter - 1;
+    }
+
+    function setPurchaseAsReceived(uint256 orderId, bool positiveVote)
+        external
+        onlyBuyerOfOrder(orderId)
+        onlyEscrowNotCompleted(orderId)
+    {
+        if (positiveVote) {
+            _reviews[0] += 1;
+        } else {
+            _reviews[1] += 1;
+        }
+
+        _releaseFundsEscrow(orderId);
     }
 }

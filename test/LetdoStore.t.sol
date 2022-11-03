@@ -80,4 +80,19 @@ contract LetdoStoreTest is Test {
         );
         assertEq(0, order.itemId);
     }
+
+    function testSetPurchaseAsReceivedWithPositiveReview() public {
+        testPurchase();
+        vm.startPrank(address(1000));
+        vm.expectRevert(LetdoStore.InvalidBuyer.selector);
+        store.setPurchaseAsReceived(0, true);
+        vm.stopPrank();
+        vm.startPrank(buyer);
+        assertEq(0, store.checkAvailableCurrencyToken());
+        store.setPurchaseAsReceived(0, true);
+        assertEq(50, store.checkAvailableCurrencyToken());
+        vm.expectRevert(LetdoStore.OrderAlreadyCompleted.selector);
+        store.setPurchaseAsReceived(0, true);
+        vm.stopPrank();
+    }
 }
