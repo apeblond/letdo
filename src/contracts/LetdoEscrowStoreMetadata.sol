@@ -13,6 +13,8 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
     error NotEnoughFunds();
     error OpAlreadyFinished();
 
+    event AvailableFundsForWithdraw(uint256 amount);
+
     function _beginEscrow(uint256 orderId, uint256 amount) internal {
         IERC20 token = IERC20(storeCurrencyERC20);
         if (token.balanceOf(msg.sender) < amount) revert NotEnoughFunds();
@@ -39,6 +41,7 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
         LetdoEscrowOp memory op = _ops[escrowOpId];
         if (op.completed) revert OpAlreadyFinished();
         _availableCurrencyToken += op.amount;
+        emit AvailableFundsForWithdraw(op.amount);
         op.completed = true;
         _ops[escrowOpId] = op;
     }
