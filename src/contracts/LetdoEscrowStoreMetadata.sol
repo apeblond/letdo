@@ -8,7 +8,7 @@ import "../../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
     uint256 constant MAX_STORE_TIME = 90 days;
     uint256 constant THRESHOLD_NOT_RECEIVED = 60 days;
-    mapping(uint256 => LetdoEscrowOp) _ops; // id => op
+    LetdoEscrowOp[] _ops;
     uint256 _availableCurrencyToken;
 
     error NotEnoughFunds();
@@ -26,7 +26,7 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
             block.timestamp,
             false
         );
-        _ops[orderId] = op;
+        _ops.push(op);
     }
 
     function _returnFundsEscrow(uint256 orderId) internal {
