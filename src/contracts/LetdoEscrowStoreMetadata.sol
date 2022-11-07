@@ -16,7 +16,7 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
 
     event AvailableFundsForWithdraw(uint256 amount);
 
-    function _beginEscrow(uint256 orderId, uint256 amount) internal {
+    function _beginEscrow(uint256 amount) internal {
         IERC20 token = IERC20(storeCurrencyERC20);
         if (token.balanceOf(msg.sender) < amount) revert NotEnoughFunds();
         token.transferFrom(msg.sender, address(this), amount);
