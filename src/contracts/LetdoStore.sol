@@ -107,13 +107,13 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
     function purchase(
         uint256 itemId,
         uint256 quantity,
-        string memory encryptedDeliveryAddress
+        string memory encryptedDeliveryData
     ) external onlyExistingItem(itemId) returns (uint256) {
         if (quantity == 0) revert InvalidItemAmount();
         LetdoItem memory item = getInventoryItem(itemId);
         _beginEscrow(item.price * quantity);
         _orders[_orderCounter] = LetdoOrder(
-            encryptedDeliveryAddress,
+            encryptedDeliveryData,
             item.price * quantity,
             itemId,
             msg.sender
