@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/contracts/LetdoStore.sol";
+import "../src/contracts/LetdoStoreMetadata.sol";
+import "../src/contracts/LetdoEscrowStoreMetadata.sol";
 import "../src/structs/LetdoItem.sol";
 import "../src/structs/LetdoOrder.sol";
 import "./TestERC20.sol";
@@ -138,6 +140,38 @@ contract LetdoStoreTest is Test {
         vm.warp(block.timestamp + 91 days);
         vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
         store.setPurchaseAsNotReceived(0);
+        vm.stopPrank();
+    }
+
+    function testSetOrderAsComplete() public {
+        testPurchase();
+        vm.expectRevert(LetdoStoreMetadata.NotOwner.selector);
+        store.setOrderAsComplete(0);
+        vm.startPrank(storeOwner);
+        vm.expectRevert(LetdoStore.ActionNotAvailable.selector);
+        store.setOrderAsComplete(0);
+        assertEq(0, store.checkAvailableCurrencyToken());
+        vm.warp(block.timestamp + 91 days);
+        store.setOrderAsComplete(0);
+        assertEq(50, store.checkAvailableCurrencyToken());
+        vm.expectRevert(LetdoStore.OrderAlreadyCompleted.selector);
+        store.setOrderAsComplete(0);
+        vm.stopPrank();
+    }
+
+    function testWithdrawAvailableFunds() public {
+        testSetOrderAsComplete();
+        vm.expectRevert(LetdoStoreMetadata.NotOwner.selector);
+        store.withdrawAvailableCurrencyToken();
+        vm.startPrank(storeOwner);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(store), storeOwner, 50);
+        store.withdrawAvailableCurrencyToken();
+        assertEq(0, store.checkAvailableCurrencyToken());
+        vm.expectRevert(
+            LetdoEscrowStoreMetadata.NotEnoughCurrencyToken.selector
+        );
+        store.withdrawAvailableCurrencyToken();
         vm.stopPrank();
     }
 }

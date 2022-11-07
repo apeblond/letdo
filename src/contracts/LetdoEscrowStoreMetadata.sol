@@ -13,6 +13,7 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
 
     error NotEnoughFunds();
     error OpAlreadyFinished();
+    error NotEnoughCurrencyToken();
 
     event AvailableFundsForWithdraw(uint256 amount);
 
@@ -69,7 +70,24 @@ contract LetdoEscrowStoreMetadata is LetdoStoreMetadata {
         return false;
     }
 
+    function _canOpBeSetAsCompleted(uint256 orderId) internal view returns (bool) {
+        LetdoEscrowOp memory op = _ops[orderId];
+        if (!op.completed && block.timestamp > op.timestamp + MAX_STORE_TIME) {
+            return true;
+        }
+
+        return false;
+    }
+
     function checkAvailableCurrencyToken() external view returns (uint256) {
         return _availableCurrencyToken;
+    }
+
+    function withdrawAvailableCurrencyToken() external onlyStoreOwner {
+        if (_availableCurrencyToken == 0) revert NotEnoughCurrencyToken();
+
+        IERC20 token = IERC20(storeCurrencyERC20);
+        token.transfer(storeOwner, _availableCurrencyToken);
+        _availableCurrencyToken = 0;
     }
 }

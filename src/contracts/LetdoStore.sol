@@ -32,6 +32,8 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         int8 review
     );
 
+    event OrderCompleted(uint256 orderId);
+
     constructor(string memory _storeName, address _storeCurrencyERC20) {
         storeName = _storeName;
         storeOwner = msg.sender;
@@ -146,6 +148,7 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         }
 
         _releaseFundsEscrow(orderId);
+        emit OrderCompleted(orderId);
     }
 
     function setPurchaseAsNotReceived(uint256 orderId)
@@ -161,5 +164,18 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         emit ReviewSubmitted(order.buyer, orderId, order.itemId, -1);
 
         _returnFundsEscrow(orderId);
+        emit OrderCompleted(orderId);
+    }
+
+    function setOrderAsComplete(uint256 orderId)
+        external
+        onlyExistingOrder(orderId)
+        onlyStoreOwner
+        onlyEscrowNotCompleted(orderId)
+    {
+        if (!_canOpBeSetAsCompleted(orderId)) revert ActionNotAvailable();
+
+        _releaseFundsEscrow(orderId);
+        emit OrderCompleted(orderId);
     }
 }
