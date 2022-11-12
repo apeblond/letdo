@@ -8,6 +8,7 @@ import "../structs/LetdoOrder.sol";
 contract LetdoStore is LetdoEscrowStoreMetadata {
     LetdoItem[] _inventory;
     mapping(uint256 => LetdoOrder) _orders;
+    mapping(uint256 => bool) _rejectedOrders;
     uint256 _orderCounter;
     uint256[2] _reviews; // [0] positive reviews, [1] negative reviews
 
@@ -176,6 +177,26 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         if (!_canOpBeSetAsCompleted(orderId)) revert ActionNotAvailable();
 
         _releaseFundsEscrow(orderId);
+        emit OrderCompleted(orderId);
+    }
+
+    function rejectOrder(uint256 orderId)
+        external
+        onlyExistingOrder(orderId)
+        onlyStoreOwner
+        onlyEscrowNotCompleted(orderId)
+    {
+        _rejectedOrders[orderId] = true;
+    }
+
+    function claimFundsAfterRejection(uint256 orderId)
+        external
+        onlyBuyerOfOrder(orderId)
+        onlyEscrowNotCompleted(orderId)
+    {
+        if (!_rejectedOrders[orderId]) revert ActionNotAvailable();
+
+        _returnFundsEscrow(orderId);
         emit OrderCompleted(orderId);
     }
 }

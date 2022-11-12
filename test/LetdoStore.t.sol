@@ -174,4 +174,22 @@ contract LetdoStoreTest is Test {
         store.withdrawAvailableCurrencyToken();
         vm.stopPrank();
     }
+
+    function testRejectOrderAndClaimFunds() public {
+        testPurchase();
+        vm.startPrank(storeOwner);
+        store.rejectOrder(0);
+        vm.stopPrank();
+        vm.startPrank(address(400));
+        vm.expectRevert(LetdoStore.InvalidBuyer.selector);
+        store.claimFundsAfterRejection(0);
+        vm.stopPrank();
+        vm.startPrank(buyer);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(store), buyer, 50);
+        store.claimFundsAfterRejection(0);
+        vm.expectRevert(LetdoStore.OrderAlreadyCompleted.selector);
+        store.claimFundsAfterRejection(0);
+        vm.stopPrank();
+    }
 }
