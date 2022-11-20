@@ -1,27 +1,39 @@
 import { useRef, useState, useEffect } from "react";
+import { useContractRead } from "wagmi";
 import { encryptText } from "../lib/encrypt-decrypt";
+import letdoStoreABI from "../abi/LetdoStore.json";
 
 const Encrypt = ({ addressStore }) => {
   const infoRef = useRef(null);
   const [publicKey, setPublicKey] = useState("");
   const [encryptedInfo, setEncryptedInfo] = useState("");
-
-  const onEncrypt = async () => {
-    // TO DO: Obtain Store owner public key from store contract
-    // For testing purposes, passing directly the public key using
-    // addressStore
-
-    setPublicKey(addressStore);
-  };
+  const publicKeyStoreContractRead = useContractRead({
+    address: addressStore,
+    abi: letdoStoreABI,
+    functionName: "storePublicKey",
+  });
 
   useEffect(() => {
-    if (publicKey && infoRef.current.value) {
-      encryptInfo();
+    if (addressStore) {
+      publicKeyStoreContractRead.refetch();
     }
-  }, [publicKey]);
 
-  const encryptInfo = async () => {
-    setEncryptedInfo(await encryptText(infoRef.current.value, publicKey));
+    if (publicKey && infoRef.current.value) {
+      encryptInfo(infoRef.current.value, publicKey);
+    }
+  }, [addressStore, infoRef.current?.value, publicKey]);
+
+  const onEncrypt = async () => {
+    setPublicKey(publicKeyStoreContractRead.data);
+    if (publicKey && infoRef.current.value) {
+      encryptInfo(infoRef.current.value, publicKey);
+    }
+  };
+
+  const encryptInfo = async (text, key) => {
+    console.log("Encrypting!");
+    const encrypted = await encryptText(text, key);
+    setEncryptedInfo(encrypted);
   };
 
   return (
