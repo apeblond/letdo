@@ -34,6 +34,7 @@ contract LetdoStoreFactory {
         address newStoreAddress = address(
             new LetdoStore{salt: salt}(
                 storeName,
+                msg.sender,
                 storesCurrencyERC20,
                 storePublicKey
             )

@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/contracts/LetdoStoreFactory.sol";
+import "../src/contracts/LetdoStore.sol";
 import "./TestERC20.sol";
 
 contract LetdoStoreTest is Test {
@@ -17,10 +18,12 @@ contract LetdoStoreTest is Test {
 
     function testStoreCreation() public {
         assertEq(factory.allStoresLength(), 0);
+        vm.startPrank(storeOwner);
         address createdStore = factory.createStore(
             "Test",
             "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
         );
+        vm.stopPrank();
         assertFalse(createdStore == address(0));
         assertEq(factory.allStoresLength(), 1);
         assertEq(factory.allStores(0), createdStore);
@@ -28,16 +31,24 @@ contract LetdoStoreTest is Test {
 
     function testCreateMultipleStores() public {
         testStoreCreation();
+        vm.startPrank(storeOwner);
         address createdStore = factory.createStore(
             "Test",
             "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
         );
         assertEq(factory.allStoresLength(), 2);
         assertEq(factory.allStores(1), createdStore);
+        vm.stopPrank();
     }
 
     function testFailStoreCreationWithEmptyString() public {
         assertEq(factory.allStoresLength(), 0);
         factory.createStore("", "");
+    }
+
+    function testOwnerIsSetByFactory() public {
+        testStoreCreation();
+        LetdoStore store = LetdoStore(factory.allStores(0));
+        assertFalse(store.storeOwner() != storeOwner);
     }
 }

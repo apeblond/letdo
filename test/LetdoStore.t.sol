@@ -22,6 +22,7 @@ contract LetdoStoreTest is Test {
         currency = new TestERC20();
         store = new LetdoStore(
             "Test store",
+            storeOwner,
             address(currency),
             "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
         );

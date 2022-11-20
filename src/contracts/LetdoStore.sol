@@ -37,11 +37,12 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
 
     constructor(
         string memory _storeName,
+        address _storeOwner,
         address _storeCurrencyERC20,
         string memory _storePublicKey
     ) {
         storeName = _storeName;
-        storeOwner = msg.sender;
+        storeOwner = _storeOwner;
         storeCurrencyERC20 = _storeCurrencyERC20;
         storePublicKey = _storePublicKey;
     }
