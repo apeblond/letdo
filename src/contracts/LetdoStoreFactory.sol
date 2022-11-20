@@ -20,15 +20,23 @@ contract LetdoStoreFactory {
         return allStores.length;
     }
 
-    function createStore(string calldata storeName) external returns (address) {
-        if (bytes(storeName).length == 0) revert EmptyString();
+    function createStore(
+        string calldata storeName,
+        string calldata storePublicKey
+    ) external returns (address) {
+        if (bytes(storeName).length == 0 || bytes(storePublicKey).length == 0)
+            revert EmptyString();
 
         bytes32 salt = keccak256(
             abi.encodePacked(allStores.length, msg.sender)
         );
 
         address newStoreAddress = address(
-            new LetdoStore{salt: salt}(storeName, storesCurrencyERC20)
+            new LetdoStore{salt: salt}(
+                storeName,
+                storesCurrencyERC20,
+                storePublicKey
+            )
         );
 
         allStores.push(newStoreAddress);

@@ -17,7 +17,10 @@ contract LetdoStoreTest is Test {
 
     function testStoreCreation() public {
         assertEq(factory.allStoresLength(), 0);
-        address createdStore = factory.createStore("Test");
+        address createdStore = factory.createStore(
+            "Test",
+            "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
+        );
         assertFalse(createdStore == address(0));
         assertEq(factory.allStoresLength(), 1);
         assertEq(factory.allStores(0), createdStore);
@@ -25,13 +28,16 @@ contract LetdoStoreTest is Test {
 
     function testCreateMultipleStores() public {
         testStoreCreation();
-        address createdStore = factory.createStore("Test");
+        address createdStore = factory.createStore(
+            "Test",
+            "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
+        );
         assertEq(factory.allStoresLength(), 2);
         assertEq(factory.allStores(1), createdStore);
     }
 
     function testFailStoreCreationWithEmptyString() public {
         assertEq(factory.allStoresLength(), 0);
-        factory.createStore("");
+        factory.createStore("", "");
     }
 }

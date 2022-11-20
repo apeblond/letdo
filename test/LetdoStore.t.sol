@@ -20,7 +20,11 @@ contract LetdoStoreTest is Test {
     function setUp() public {
         vm.startPrank(storeOwner);
         currency = new TestERC20();
-        store = new LetdoStore("Test store", address(currency));
+        store = new LetdoStore(
+            "Test store",
+            address(currency),
+            "YItnQSip5+5vXVgcablSxSb5RuQEgQPNULJRw2T7OAs="
+        );
         vm.stopPrank();
         vm.startPrank(buyer);
         currency.mint(1000 * 10**uint256(currency.decimals()));

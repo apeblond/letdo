@@ -35,10 +35,15 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
 
     event OrderCompleted(uint256 orderId);
 
-    constructor(string memory _storeName, address _storeCurrencyERC20) {
+    constructor(
+        string memory _storeName,
+        address _storeCurrencyERC20,
+        string memory _storePublicKey
+    ) {
         storeName = _storeName;
         storeOwner = msg.sender;
         storeCurrencyERC20 = _storeCurrencyERC20;
+        storePublicKey = _storePublicKey;
     }
 
     modifier onlyExistingItem(uint256 id) {

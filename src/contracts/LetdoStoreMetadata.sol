@@ -5,6 +5,7 @@ contract LetdoStoreMetadata {
     string public storeName;
     address public storeOwner;
     address public storeCurrencyERC20;
+    string public storePublicKey;
 
     error NotOwner();
 
