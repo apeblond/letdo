@@ -23,6 +23,7 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         address indexed buyer,
         uint256 orderId,
         uint256 amount,
+        uint256 quantity,
         uint256 itemId
     );
 
@@ -124,6 +125,7 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
         _orders[_orderCounter] = LetdoOrder(
             encryptedDeliveryData,
             item.price * quantity,
+            quantity,
             itemId,
             msg.sender
         );
@@ -132,6 +134,7 @@ contract LetdoStore is LetdoEscrowStoreMetadata {
             msg.sender,
             _orderCounter,
             item.price * quantity,
+            quantity,
             itemId
         );
 
